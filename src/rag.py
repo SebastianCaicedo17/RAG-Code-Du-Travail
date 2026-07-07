@@ -3,10 +3,12 @@ from pathlib import Path
 from groq import Groq
 
 from src.config import GROQ_API_KEY, LLM_MODEL
+from src.moderator_agent import ModeratorAgent
 from src.vector_store import VectorStore
 
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system_prompt.txt"
 CHUNKS_PLACEHOLDER = "{{Chunks}}"
+INJECTION_REFUSAL = "Je ne peux pas répondre à cette demande."
 
 
 class RAG:
@@ -18,6 +20,7 @@ class RAG:
     ) -> None:
         # config.py charge déjà le .env et vérifie GROQ_API_KEY à l'import.
         self.client = Groq(api_key=GROQ_API_KEY)
+        self.moderator = ModeratorAgent()
 
         # Rouvre la base vectorielle déjà construite (étape 3.2), sans
         # ré-encoder aucun chunk.
@@ -39,6 +42,10 @@ class RAG:
         return template.replace(CHUNKS_PLACEHOLDER, formatted_chunks)
 
     def answer_question(self, question: str) -> str:
+        moderation = self.moderator.moderate(question)
+        if moderation["is_prompt_injection"]:
+            return INJECTION_REFUSAL
+
         system_prompt = self._build_system_prompt(question)
 
         response = self.client.chat.completions.create(
