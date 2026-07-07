@@ -34,7 +34,7 @@ class VectorStore:
 
         # 5. Insertion : un identifiant unique, le texte, le vecteur et la
         # métadonnée de source pour chaque chunk.
-        ids = [str(uuid.uuid4()) for _ in chunks]
+        ids = [chunk.get("id", str(uuid.uuid4())) for chunk in chunks]
         metadatas = [{"source": chunk["source"]} for chunk in chunks]
 
         self.collection.add(
