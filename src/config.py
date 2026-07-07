@@ -14,5 +14,4 @@ def _require(var: str) -> str:
 
 GROQ_API_KEY: str = _require("GROQ_API_KEY")
 
-STT_MODEL = "whisper-large-v3-turbo"
-LLM_MODEL = "llama-3.3-70b-versatile"
+EMBEDDING_MODEL = "distiluse-base-multilingual-cased-v2"
